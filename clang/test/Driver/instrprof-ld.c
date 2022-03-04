@@ -55,6 +55,15 @@
 // CHECK-OPENBSD-X86-64: "{{.*}}/Inputs/resource_dir{{/|\\\\}}lib{{/|\\\\}}x86_64-unknown-openbsd{{/|\\\\}}libclang_rt.profile.a"
 
 // RUN: %clang -### %s 2>&1 \
+// RUN:     --target=x86_64-pc-serenity -fprofile-instr-generate -fuse-ld=ld \
+// RUN:     -resource-dir=%S/Inputs/resource_dir \
+// RUN:     --sysroot=%S/Inputs/serenity_x86_64_tree \
+// RUN:   | FileCheck --check-prefix=CHECK-SERENITY-X86-64 %s
+
+// CHECK-SERENITY-X86-64: "{{(.*[^-.0-9A-Z_a-z])?}}ld.lld{{(.exe)?}}"
+// CHECK-SERENITY-X86-64: "{{.*}}/Inputs/resource_dir{{/|\\\\}}lib{{/|\\\\}}x86_64-pc-serenity{{/|\\\\}}libclang_rt.profile.a"
+
+// RUN: %clang -### %s 2>&1 \
 // RUN:     -shared \
 // RUN:     --target=i386-unknown-linux -fprofile-instr-generate -fuse-ld=ld \
 // RUN:     -resource-dir=%S/Inputs/resource_dir \
@@ -103,6 +112,17 @@
 
 // CHECK-OPENBSD-X86-64-SHARED: "{{(.*[^-.0-9A-Z_a-z])?}}ld{{(.exe)?}}"
 // CHECK-OPENBSD-X86-64-SHARED: "{{.*}}/Inputs/resource_dir{{/|\\\\}}lib{{/|\\\\}}x86_64-unknown-openbsd{{/|\\\\}}libclang_rt.profile.a"
+
+// RUN: %clang -### %s 2>&1 \
+// RUN:     -shared \
+// RUN:     --target=x86_64-pc-serenity -fprofile-instr-generate -fuse-ld=ld \
+// RUN:     -resource-dir=%S/Inputs/resource_dir \
+// RUN:     --sysroot=%S/Inputs/serenity_x86_64_tree \
+// RUN:   | FileCheck --check-prefix=CHECK-SERENITY-X86-64-SHARED %s
+
+// CHECK-SERENITY-X86-64-SHARED: "{{(.*[^-.0-9A-Z_a-z])?}}ld.lld{{(.exe)?}}"
+// CHECK-SERENITY-X86-64-SHARED: "{{.*}}/Inputs/resource_dir{{/|\\\\}}lib{{/|\\\\}}x86_64-pc-serenity{{/|\\\\}}libclang_rt.profile.a"
+
 
 // RUN: %clang -### %s 2>&1 \
 // RUN:     --target=x86_64-apple-darwin14 -fprofile-instr-generate -fuse-ld=ld \
