@@ -534,6 +534,9 @@ elseif(MINGW OR CYGWIN)
   if (NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     append("-Wa,-mbig-obj" CMAKE_C_FLAGS CMAKE_CXX_FLAGS)
   endif()
+elseif(SERENITYOS)
+  # SerenityOS sets a very low default stack size value, so increase it to 4MB manually.
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-z,stack-size=4194304")
 endif()
 
 option(LLVM_ENABLE_WARNINGS "Enable compiler warnings." ON)

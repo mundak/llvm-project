@@ -219,7 +219,8 @@ SharedMemoryMapper::Create(ExecutorProcessControl &EPC, SymbolAddrs SAs) {
 
 void SharedMemoryMapper::reserve(size_t NumBytes,
                                  OnReservedFunction OnReserved) {
-#if (defined(LLVM_ON_UNIX) && !defined(__ANDROID__)) || defined(_WIN32)
+#if (defined(LLVM_ON_UNIX) && !(defined(__ANDROID__) || defined(__serenity__))) \
+    || defined(_WIN32)
 
   EPC.callSPSWrapperAsync<
       rt::SPSExecutorSharedMemoryMapperServiceReserveSignature>(

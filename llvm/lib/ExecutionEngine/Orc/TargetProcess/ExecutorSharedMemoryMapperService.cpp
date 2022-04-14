@@ -51,7 +51,8 @@ static DWORD getWindowsProtectionFlags(MemProt MP) {
 
 Expected<std::pair<ExecutorAddr, std::string>>
 ExecutorSharedMemoryMapperService::reserve(uint64_t Size) {
-#if (defined(LLVM_ON_UNIX) && !defined(__ANDROID__)) || defined(_WIN32)
+#if (defined(LLVM_ON_UNIX) && !(defined(__ANDROID__) || defined(__serenity__))) \
+    || defined(_WIN32)
 
 #if defined(LLVM_ON_UNIX)
 
