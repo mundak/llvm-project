@@ -491,6 +491,7 @@ set(files
   __locale_dir/locale_base_api/musl.h
   __locale_dir/locale_base_api/newlib.h
   __locale_dir/locale_base_api/openbsd.h
+  __locale_dir/locale_base_api/serenity.h
   __locale_dir/locale_base_api/win32.h
   __math/abs.h
   __math/copysign.h

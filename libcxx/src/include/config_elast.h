@@ -35,6 +35,8 @@
 #  define _LIBCPP_ELAST 4095
 #elif defined(__APPLE__)
 // No _LIBCPP_ELAST needed on Apple
+#elif defined(__serenity__)
+// No _LIBCPP_ELAST needed on SerenityOS
 #elif defined(__MVS__)
 #  define _LIBCPP_ELAST 1160
 #elif defined(_LIBCPP_MSVCRT_LIKE)
