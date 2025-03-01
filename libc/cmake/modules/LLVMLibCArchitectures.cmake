@@ -26,7 +26,7 @@ function(get_arch_and_system_from_triple triple arch_var sys_var)
   if(triple_size LESS "3")
     return()
   endif()
-  math(EXPR system_index "${triple_size} - 2")
+  math(EXPR system_index "${triple_size} - 1")
   list(GET triple_comps 0 target_arch)
   # The target_arch string can have sub-architecture suffixes which we want to
   # remove. So, we regex-match the string and set target_arch to a cleaner
