@@ -166,6 +166,9 @@ std::unique_ptr<TargetInfo> AllocateTarget(const llvm::Triple &Triple,
     case llvm::Triple::OpenBSD:
       return std::make_unique<OpenBSDTargetInfo<AArch64leTargetInfo>>(Triple,
                                                                       Opts);
+    case llvm::Triple::RingOS:
+      return std::make_unique<RingOSTargetInfo<AArch64leTargetInfo>>(Triple,
+                                                                       Opts);
     case llvm::Triple::Win32:
       switch (Triple.getEnvironment()) {
       case llvm::Triple::GNU:
@@ -646,6 +649,9 @@ std::unique_ptr<TargetInfo> AllocateTarget(const llvm::Triple &Triple,
       return std::make_unique<PS5OSTargetInfo<X86_64TargetInfo>>(Triple, Opts);
     case llvm::Triple::Hurd:
       return std::make_unique<HurdTargetInfo<X86_64TargetInfo>>(Triple, Opts);
+    case llvm::Triple::RingOS:
+      return std::make_unique<RingOSTargetInfo<X86_64TargetInfo>>(Triple,
+                                                                    Opts);
     default:
       return std::make_unique<X86_64TargetInfo>(Triple, Opts);
     }
