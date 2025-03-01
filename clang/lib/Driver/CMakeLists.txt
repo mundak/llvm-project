@@ -7,7 +7,7 @@ set(LLVM_LINK_COMPONENTS
   Support
   TargetParser
   WindowsDriver
-  )
+)
 
 if(WIN32)
   # MSVCToolChain.cpp uses version.dll.
@@ -75,6 +75,7 @@ add_clang_library(clangDriver
   ToolChains/OpenBSD.cpp
   ToolChains/PS4CPU.cpp
   ToolChains/RISCVToolchain.cpp
+  ToolChains/RingOS.cpp
   ToolChains/Solaris.cpp
   ToolChains/SPIRV.cpp
   ToolChains/TCE.cpp
@@ -90,6 +91,7 @@ add_clang_library(clangDriver
 
   DEPENDS
   ClangDriverOptions
+
   # These generated headers are included transitively.
   ARMTargetParserTableGen
   AArch64TargetParserTableGen
@@ -97,4 +99,4 @@ add_clang_library(clangDriver
   LINK_LIBS
   clangBasic
   ${system_libs}
-  )
+)

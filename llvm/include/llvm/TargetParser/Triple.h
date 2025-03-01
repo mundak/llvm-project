@@ -238,6 +238,7 @@ public:
     ShaderModel, // DirectX ShaderModel
     LiteOS,
     Serenity,
+    RingOS,
     Vulkan, // Vulkan SPIR-V
     LastOSType = Vulkan
   };
@@ -720,6 +721,11 @@ public:
 
   bool isOSSerenity() const {
     return getOS() == Triple::Serenity;
+  }
+
+
+  bool isOSRingOS() const {
+    return getOS() == Triple::RingOS;
   }
 
   /// Tests whether the OS uses the ELF binary format.

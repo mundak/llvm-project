@@ -292,6 +292,7 @@ StringRef Triple::getOSTypeName(OSType Kind) {
   case RTEMS: return "rtems";
   case Solaris: return "solaris";
   case Serenity: return "serenity";
+  case RingOS: return "ringos";
   case TvOS: return "tvos";
   case UEFI: return "uefi";
   case WASI: return "wasi";
@@ -686,6 +687,7 @@ static Triple::OSType parseOS(StringRef OSName) {
     .StartsWith("shadermodel", Triple::ShaderModel)
     .StartsWith("liteos", Triple::LiteOS)
     .StartsWith("serenity", Triple::Serenity)
+    .StartsWith("ringos", Triple::RingOS)
     .StartsWith("vulkan", Triple::Vulkan)
     .Default(Triple::UnknownOS);
 }
