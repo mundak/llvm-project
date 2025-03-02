@@ -1,3 +1,6 @@
+# RingOS - always checkout with Linux EOF, so it works on Docker on Windows.
+* eol=lf
+
 libcxx/src/**/*.cpp     merge=libcxx-reformat
 libcxx/include/**/*.h   merge=libcxx-reformat
 
