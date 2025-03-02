@@ -1,6 +1,9 @@
 set(TARGET_LIBC_ENTRYPOINTS
     # ctype.h entrypoints
     libc.src.ctype.isalnum
+
+    # errno.h entrypoints
+    libc.src.errno.errno
 )
 
 set(TARGET_LLVMLIBC_ENTRYPOINTS
