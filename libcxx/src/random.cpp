@@ -24,12 +24,13 @@
 #if defined(_LIBCPP_USING_GETENTROPY)
 #  include <sys/random.h>
 #elif defined(_LIBCPP_USING_DEV_RANDOM)
-#  include <fcntl.h>
-#  include <unistd.h>
-#  if __has_include(<sys/ioctl.h>) && __has_include(<linux/random.h>)
-#    include <linux/random.h>
-#    include <sys/ioctl.h>
-#  endif
+// ringos: TODO!
+// #  include <fcntl.h>
+// #  include <unistd.h>
+// #  if __has_include(<sys/ioctl.h>) && __has_include(<linux/random.h>)
+// #    include <linux/random.h>
+// #    include <sys/ioctl.h>
+// #  endif
 #elif defined(_LIBCPP_USING_NACL_RANDOM)
 #  include <nacl/nacl_random.h>
 #elif defined(_LIBCPP_USING_FUCHSIA_CPRNG)
@@ -66,29 +67,31 @@ unsigned random_device::operator()() { return arc4random(); }
 
 #elif defined(_LIBCPP_USING_DEV_RANDOM)
 
-random_device::random_device(const string& __token) : __f_(open(__token.c_str(), O_RDONLY)) {
+// ringos: TODO!
+random_device::random_device(const string& __token) : __f_(-1) {
   if (__f_ < 0)
     __throw_system_error(errno, ("random_device failed to open " + __token).c_str());
 }
 
-random_device::~random_device() { close(__f_); }
+random_device::~random_device() {}
 
 unsigned random_device::operator()() {
-  unsigned r;
-  size_t n = sizeof(r);
-  char* p  = reinterpret_cast<char*>(&r);
-  while (n > 0) {
-    ssize_t s = read(__f_, p, n);
-    if (s == 0)
-      __throw_system_error(ENOMSG, "random_device got EOF");
-    if (s == -1) {
-      if (errno != EINTR)
-        __throw_system_error(errno, "random_device got an unexpected error");
-      continue;
-    }
-    n -= static_cast<size_t>(s);
-    p += static_cast<size_t>(s);
-  }
+  unsigned r = 0;
+  __throw_system_error(ENOENT, "ringos: NOT IMPLEMENTED");
+  // size_t n = sizeof(r);
+  // char* p  = reinterpret_cast<char*>(&r);
+  // while (n > 0) {
+  //   ssize_t s = read(__f_, p, n);
+  //   if (s == 0)
+  //     __throw_system_error(ENOMSG, "random_device got EOF");
+  //   if (s == -1) {
+  //     if (errno != EINTR)
+  //       __throw_system_error(errno, "random_device got an unexpected error");
+  //     continue;
+  //   }
+  //   n -= static_cast<size_t>(s);
+  //   p += static_cast<size_t>(s);
+  // }
   return r;
 }
 
