@@ -23,10 +23,10 @@ using namespace clang;
 using namespace llvm::opt;
 
 void tools::ringos::Linker::ConstructJob(Compilation &C, const JobAction &JA,
-                                           const InputInfo &Output,
-                                           const InputInfoList &Inputs,
-                                           const ArgList &Args,
-                                           const char *LinkingOutput) const {
+                                         const InputInfo &Output,
+                                         const InputInfoList &Inputs,
+                                         const ArgList &Args,
+                                         const char *LinkingOutput) const {
   const auto &TC = getToolChain();
   const auto &D = TC.getDriver();
   const bool IsShared = Args.hasArg(options::OPT_shared);
@@ -86,21 +86,21 @@ void tools::ringos::Linker::ConstructJob(Compilation &C, const JobAction &JA,
   bool ShouldLinkLibCXX =
       D.CCCIsCXX() && !HasNoStdLibXX && !HasNoStdLib && !HasNoDefaultLibs;
 
-  if (ShouldLinkStartFiles) {
-    if (!IsShared)
-      CmdArgs.push_back(Args.MakeArgString(TC.GetFilePath("crt0.o")));
+  // if (ShouldLinkStartFiles) {
+  //   if (!IsShared)
+  //     CmdArgs.push_back(Args.MakeArgString(TC.GetFilePath("crt0.o")));
 
-    std::string crtbegin_path;
-    if (TC.GetRuntimeLibType(Args) == ToolChain::RLT_CompilerRT) {
-      std::string crtbegin =
-          TC.getCompilerRT(Args, "crtbegin", ToolChain::FT_Object);
-      if (TC.getVFS().exists(crtbegin))
-        crtbegin_path = crtbegin;
-    }
-    if (crtbegin_path.empty())
-      crtbegin_path = TC.GetFilePath("crtbeginS.o");
-    CmdArgs.push_back(Args.MakeArgString(crtbegin_path));
-  }
+  //   std::string crtbegin_path;
+  //   if (TC.GetRuntimeLibType(Args) == ToolChain::RLT_CompilerRT) {
+  //     std::string crtbegin =
+  //         TC.getCompilerRT(Args, "crtbegin", ToolChain::FT_Object);
+  //     if (TC.getVFS().exists(crtbegin))
+  //       crtbegin_path = crtbegin;
+  //   }
+  //   if (crtbegin_path.empty())
+  //     crtbegin_path = TC.GetFilePath("crtbeginS.o");
+  //   CmdArgs.push_back(Args.MakeArgString(crtbegin_path));
+  // }
 
   Args.addAllArgs(CmdArgs, {options::OPT_L, options::OPT_u});
 
@@ -127,6 +127,8 @@ void tools::ringos::Linker::ConstructJob(Compilation &C, const JobAction &JA,
 
   AddLinkerInputs(TC, Inputs, Args, CmdArgs, JA);
 
+  CmdArgs.push_back(Args.MakeArgString("-L" + D.Dir + "/../lib"));
+
   if (ShouldLinkCompilerRuntime) {
     AddRunTimeLibs(TC, D, CmdArgs, Args);
 
@@ -151,26 +153,25 @@ void tools::ringos::Linker::ConstructJob(Compilation &C, const JobAction &JA,
     CmdArgs.push_back("--pop-state");
   }
 
-  CmdArgs.push_back("-L=/usr/local/lib");
-
   // Silence warnings when linking C code with a C++ '-stdlib' argument.
   Args.ClaimAllArgs(options::OPT_stdlib_EQ);
 
-  if (ShouldLinkLibC)
+  if (ShouldLinkLibC) {
     CmdArgs.push_back("-lc");
-
-  if (ShouldLinkStartFiles) {
-    std::string crtend_path;
-    if (TC.GetRuntimeLibType(Args) == ToolChain::RLT_CompilerRT) {
-      std::string crtend =
-          TC.getCompilerRT(Args, "crtend", ToolChain::FT_Object);
-      if (TC.getVFS().exists(crtend))
-        crtend_path = crtend;
-    }
-    if (crtend_path.empty())
-      crtend_path = TC.GetFilePath("crtendS.o");
-    CmdArgs.push_back(Args.MakeArgString(crtend_path));
   }
+
+  // if (ShouldLinkStartFiles) {
+  //   std::string crtend_path;
+  //   if (TC.GetRuntimeLibType(Args) == ToolChain::RLT_CompilerRT) {
+  //     std::string crtend =
+  //         TC.getCompilerRT(Args, "crtend", ToolChain::FT_Object);
+  //     if (TC.getVFS().exists(crtend))
+  //       crtend_path = crtend;
+  //   }
+  //   if (crtend_path.empty())
+  //     crtend_path = TC.GetFilePath("crtendS.o");
+  //   CmdArgs.push_back(Args.MakeArgString(crtend_path));
+  // }
 
   const char *Exec = Args.MakeArgString(TC.GetLinkerPath());
   C.addCommand(std::make_unique<Command>(JA, *this,
@@ -178,31 +179,25 @@ void tools::ringos::Linker::ConstructJob(Compilation &C, const JobAction &JA,
                                          Exec, CmdArgs, Inputs, Output));
 }
 
-RingOS::RingOS(const Driver &D, const llvm::Triple &Triple,
-                   const ArgList &Args)
-    : Generic_ELF(D, Triple, Args) {
-  getFilePaths().push_back(concat(getDriver().SysRoot, "/usr/lib"));
-}
+RingOS::RingOS(const Driver &D, const llvm::Triple &Triple, const ArgList &Args)
+    : Generic_ELF(D, Triple, Args) {}
 
-Tool *RingOS::buildLinker() const {
-  return new tools::ringos::Linker(*this);
-}
+Tool *RingOS::buildLinker() const { return new tools::ringos::Linker(*this); }
 
 void RingOS::AddClangSystemIncludeArgs(const ArgList &DriverArgs,
-                                         ArgStringList &CC1Args) const {
+                                       ArgStringList &CC1Args) const {
   const Driver &D = getDriver();
 
-  if (DriverArgs.hasArg(options::OPT_nostdinc))
+  if (DriverArgs.hasArg(options::OPT_nostdinc)) {
     return;
-
-  if (!DriverArgs.hasArg(options::OPT_nobuiltininc))
+  }
+  if (!DriverArgs.hasArg(options::OPT_nobuiltininc)) {
     addSystemInclude(DriverArgs, CC1Args, concat(D.ResourceDir, "/include"));
+  }
 
-  if (DriverArgs.hasArg(options::OPT_nostdlibinc))
+  if (DriverArgs.hasArg(options::OPT_nostdlibinc)) {
     return;
+  }
 
-  addSystemInclude(DriverArgs, CC1Args,
-                   concat(D.SysRoot, "/usr/local/include"));
-
-  addSystemInclude(DriverArgs, CC1Args, concat(D.SysRoot, "/usr/include"));
+  addSystemInclude(DriverArgs, CC1Args, concat(D.Dir, "/../include"));
 }
