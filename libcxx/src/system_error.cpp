@@ -41,6 +41,12 @@ string do_strerror_r(int ev) {
   std::snprintf(buffer, strerror_buff_size, "unknown error %d", ev);
   return string(buffer);
 }
+#  elif defined(__ringos__)
+string do_strerror_r(int ev) {
+  char buffer[strerror_buff_size];
+  std::snprintf(buffer, strerror_buff_size, "unknown error %d", ev);
+  return string(buffer);
+}
 #  else
 
 // Only one of the two following functions will be used, depending on
