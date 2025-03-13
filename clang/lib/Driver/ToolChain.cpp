@@ -1222,7 +1222,7 @@ void ToolChain::addExternCSystemIncludeIfExists(const ArgList &DriverArgs,
                                          const Twine &B, const Twine &C,
                                          const Twine &D) {
   SmallString<128> Result(Path);
-  llvm::sys::path::append(Result, llvm::sys::path::Style::posix, A, B, C, D);
+  llvm::sys::path::append(Result, llvm::sys::path::Style::native, A, B, C, D);
   return std::string(Result);
 }
 

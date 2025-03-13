@@ -106,6 +106,11 @@ void tools::ringos::Linker::ConstructJob(Compilation &C, const JobAction &JA,
 
   TC.AddFilePathLibArgs(Args, CmdArgs);
 
+  SmallString<128> LibPath(D.Dir);
+  llvm::sys::path::append(LibPath, llvm::sys::path::Style::native, "..", "lib");
+
+  CmdArgs.push_back(Args.MakeArgString(Twine("-L") + LibPath));
+
   if (D.isUsingLTO()) {
     assert(!Inputs.empty() && "Must have at least one input.");
     // Find the first filename InputInfo object.
@@ -126,8 +131,6 @@ void tools::ringos::Linker::ConstructJob(Compilation &C, const JobAction &JA,
   addLinkerCompressDebugSectionsOption(TC, Args, CmdArgs);
 
   AddLinkerInputs(TC, Inputs, Args, CmdArgs, JA);
-
-  CmdArgs.push_back(Args.MakeArgString("-L" + D.Dir + "/../lib"));
 
   if (ShouldLinkCompilerRuntime) {
     AddRunTimeLibs(TC, D, CmdArgs, Args);
@@ -192,12 +195,12 @@ void RingOS::AddClangSystemIncludeArgs(const ArgList &DriverArgs,
     return;
   }
   if (!DriverArgs.hasArg(options::OPT_nobuiltininc)) {
-    addSystemInclude(DriverArgs, CC1Args, concat(D.ResourceDir, "/include"));
+    addSystemInclude(DriverArgs, CC1Args, concat(D.ResourceDir, "include"));
   }
 
   if (DriverArgs.hasArg(options::OPT_nostdlibinc)) {
     return;
   }
 
-  addSystemInclude(DriverArgs, CC1Args, concat(D.Dir, "/../include"));
+  addSystemInclude(DriverArgs, CC1Args, concat(D.Dir, "..", "include"));
 }
