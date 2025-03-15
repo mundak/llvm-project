@@ -204,3 +204,15 @@ void RingOS::AddClangSystemIncludeArgs(const ArgList &DriverArgs,
 
   addSystemInclude(DriverArgs, CC1Args, concat(D.Dir, "..", "include"));
 }
+
+void RingOS::AddCXXStdlibLibArgs(const llvm::opt::ArgList &Args,
+                                 llvm::opt::ArgStringList &CmdArgs) const {
+  assert((GetCXXStdlibType(Args) == ToolChain::CST_Libcxx) &&
+         "Only -lc++ (aka libxx) is supported in this toolchain.");
+
+  CmdArgs.push_back("-lc++");
+  if (Args.hasArg(options::OPT_fexperimental_library)) {
+    CmdArgs.push_back("-lc++experimental");
+  }
+  CmdArgs.push_back("-lc++abi");
+}

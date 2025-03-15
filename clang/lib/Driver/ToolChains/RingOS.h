@@ -39,7 +39,7 @@ namespace toolchains {
 class LLVM_LIBRARY_VISIBILITY RingOS final : public Generic_ELF {
 public:
   RingOS(const Driver &D, const llvm::Triple &Triple,
-           const llvm::opt::ArgList &Args);
+         const llvm::opt::ArgList &Args);
 
   void
   AddClangSystemIncludeArgs(const llvm::opt::ArgList &DriverArgs,
@@ -52,6 +52,9 @@ public:
   CXXStdlibType GetDefaultCXXStdlibType() const override {
     return ToolChain::CST_Libcxx;
   }
+
+  void AddCXXStdlibLibArgs(const llvm::opt::ArgList &Args,
+                           llvm::opt::ArgStringList &CmdArgs) const override;
 
   const char *getDefaultLinker() const override { return "ld.lld"; }
 
