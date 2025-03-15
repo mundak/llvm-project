@@ -1013,6 +1013,11 @@ protected:
                     MacroBuilder &Builder) const override {
     Builder.defineMacro("__ringos__");
     DefineStd(Builder, "unix", Opts);
+
+    // This is needed for proper libc defines.
+    if (Opts.CPlusPlus) {
+      Builder.defineMacro("_GNU_SOURCE");
+    }
   }
 
 public:
