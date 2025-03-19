@@ -53,9 +53,6 @@ public:
     return ToolChain::CST_Libcxx;
   }
 
-  void AddCXXStdlibLibArgs(const llvm::opt::ArgList &Args,
-                           llvm::opt::ArgStringList &CmdArgs) const override;
-
   const char *getDefaultLinker() const override { return "ld.lld"; }
 
   bool HasNativeLLVMSupport() const override { return true; }

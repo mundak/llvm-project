@@ -29,40 +29,15 @@ void tools::ringos::Linker::ConstructJob(Compilation &C, const JobAction &JA,
                                          const char *LinkingOutput) const {
   const auto &TC = getToolChain();
   const auto &D = TC.getDriver();
-  const bool IsShared = Args.hasArg(options::OPT_shared);
-  const bool IsStatic =
-      Args.hasArg(options::OPT_static) && !Args.hasArg(options::OPT_static_pie);
-  const bool IsStaticPIE = Args.hasArg(options::OPT_static_pie);
   ArgStringList CmdArgs;
 
   if (!D.SysRoot.empty())
     CmdArgs.push_back(Args.MakeArgString("--sysroot=" + D.SysRoot));
 
-  if (IsShared)
-    CmdArgs.push_back("-shared");
+  // Only static linking is supported.
+  CmdArgs.push_back("-static");
 
-  if (IsStaticPIE) {
-    CmdArgs.push_back("-static");
-    CmdArgs.push_back("-pie");
-    CmdArgs.push_back("--no-dynamic-linker");
-    CmdArgs.push_back("-z");
-    CmdArgs.push_back("text");
-  } else if (IsStatic) {
-    CmdArgs.push_back("-static");
-  } else if (!Args.hasArg(options::OPT_r)) {
-    if (Args.hasArg(options::OPT_rdynamic))
-      CmdArgs.push_back("-export-dynamic");
-    if (!IsShared) {
-      Arg *A = Args.getLastArg(options::OPT_pie, options::OPT_no_pie,
-                               options::OPT_nopie);
-      bool IsPIE = A ? A->getOption().matches(options::OPT_pie) : true;
-      if (IsPIE)
-        CmdArgs.push_back("-pie");
-      CmdArgs.push_back("-dynamic-linker");
-      CmdArgs.push_back("/usr/lib/Loader.so");
-    }
-  }
-
+  // ??
   CmdArgs.push_back("--eh-frame-hdr");
 
   assert((Output.isFilename() || Output.isNothing()) && "Invalid output.");
@@ -71,36 +46,19 @@ void tools::ringos::Linker::ConstructJob(Compilation &C, const JobAction &JA,
     CmdArgs.push_back(Output.getFilename());
   }
 
+  // ??
   CmdArgs.push_back("-z");
   CmdArgs.push_back("pack-relative-relocs");
 
   bool HasNoStdLib = Args.hasArg(options::OPT_nostdlib, options::OPT_r);
   bool HasNoStdLibXX = Args.hasArg(options::OPT_nostdlibxx);
   bool HasNoLibC = Args.hasArg(options::OPT_nolibc);
-  bool HasNoStartFiles = Args.hasArg(options::OPT_nostartfiles);
   bool HasNoDefaultLibs = Args.hasArg(options::OPT_nodefaultlibs);
 
-  bool ShouldLinkStartFiles = !HasNoStartFiles && !HasNoStdLib;
   bool ShouldLinkCompilerRuntime = !HasNoDefaultLibs && !HasNoStdLib;
   bool ShouldLinkLibC = !HasNoLibC && !HasNoStdLib && !HasNoDefaultLibs;
   bool ShouldLinkLibCXX =
       D.CCCIsCXX() && !HasNoStdLibXX && !HasNoStdLib && !HasNoDefaultLibs;
-
-  // if (ShouldLinkStartFiles) {
-  //   if (!IsShared)
-  //     CmdArgs.push_back(Args.MakeArgString(TC.GetFilePath("crt0.o")));
-
-  //   std::string crtbegin_path;
-  //   if (TC.GetRuntimeLibType(Args) == ToolChain::RLT_CompilerRT) {
-  //     std::string crtbegin =
-  //         TC.getCompilerRT(Args, "crtbegin", ToolChain::FT_Object);
-  //     if (TC.getVFS().exists(crtbegin))
-  //       crtbegin_path = crtbegin;
-  //   }
-  //   if (crtbegin_path.empty())
-  //     crtbegin_path = TC.GetFilePath("crtbeginS.o");
-  //   CmdArgs.push_back(Args.MakeArgString(crtbegin_path));
-  // }
 
   Args.addAllArgs(CmdArgs, {options::OPT_L, options::OPT_u});
 
@@ -143,38 +101,17 @@ void tools::ringos::Linker::ConstructJob(Compilation &C, const JobAction &JA,
       CmdArgs.push_back("-lubsan");
   }
 
-  if (ShouldLinkLibCXX) {
-    bool OnlyLibstdcxxStatic = Args.hasArg(options::OPT_static_libstdcxx) &&
-                               !Args.hasArg(options::OPT_static);
-    CmdArgs.push_back("--push-state");
-    CmdArgs.push_back("--as-needed");
-    if (OnlyLibstdcxxStatic)
-      CmdArgs.push_back("-Bstatic");
-    TC.AddCXXStdlibLibArgs(Args, CmdArgs);
-    if (OnlyLibstdcxxStatic)
-      CmdArgs.push_back("-Bdynamic");
-    CmdArgs.push_back("--pop-state");
-  }
-
   // Silence warnings when linking C code with a C++ '-stdlib' argument.
   Args.ClaimAllArgs(options::OPT_stdlib_EQ);
 
-  if (ShouldLinkLibC) {
-    CmdArgs.push_back("-lc");
+  if (ShouldLinkLibCXX) {
+    CmdArgs.push_back(Args.MakeArgString(LibPath + Twine("/libc++.a")));
+    CmdArgs.push_back(Args.MakeArgString(LibPath + Twine("/libc++abi.a")));
   }
 
-  // if (ShouldLinkStartFiles) {
-  //   std::string crtend_path;
-  //   if (TC.GetRuntimeLibType(Args) == ToolChain::RLT_CompilerRT) {
-  //     std::string crtend =
-  //         TC.getCompilerRT(Args, "crtend", ToolChain::FT_Object);
-  //     if (TC.getVFS().exists(crtend))
-  //       crtend_path = crtend;
-  //   }
-  //   if (crtend_path.empty())
-  //     crtend_path = TC.GetFilePath("crtendS.o");
-  //   CmdArgs.push_back(Args.MakeArgString(crtend_path));
-  // }
+  if (ShouldLinkLibC) {
+    CmdArgs.push_back(Args.MakeArgString(LibPath + Twine("/libc.a")));
+  }
 
   const char *Exec = Args.MakeArgString(TC.GetLinkerPath());
   C.addCommand(std::make_unique<Command>(JA, *this,
@@ -203,16 +140,4 @@ void RingOS::AddClangSystemIncludeArgs(const ArgList &DriverArgs,
   }
 
   addSystemInclude(DriverArgs, CC1Args, concat(D.Dir, "..", "include"));
-}
-
-void RingOS::AddCXXStdlibLibArgs(const llvm::opt::ArgList &Args,
-                                 llvm::opt::ArgStringList &CmdArgs) const {
-  assert((GetCXXStdlibType(Args) == ToolChain::CST_Libcxx) &&
-         "Only -lc++ (aka libxx) is supported in this toolchain.");
-
-  CmdArgs.push_back("-lc++");
-  if (Args.hasArg(options::OPT_fexperimental_library)) {
-    CmdArgs.push_back("-lc++experimental");
-  }
-  CmdArgs.push_back("-lc++abi");
 }
